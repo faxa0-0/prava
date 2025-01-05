@@ -1,4 +1,6 @@
 <script setup>
+import Timer from '@/components/Timer.vue';
+
 defineProps({
   totalQuestions: {
     type: Number,
@@ -13,6 +15,7 @@ defineProps({
 
 <template>
   <div class="rounded-lg shadow-md row-span-2 col-span-2 flex flex-col gap-8 p-5">
+    <Timer :initial-minutes="20" />
     <div class="flex flex-col gap-2">
       <button
         type="button"
