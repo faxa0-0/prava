@@ -1,7 +1,14 @@
 <script setup></script>
 
 <template>
-  <section class="flex items-center justify-center min-h-screen bg-slate-100">
-    <h1 class="text-indigo-500 text-4xl font-bold">Not Found</h1>
-  </section>
+  <div class="h-screen flex flex-col items-center justify-center">
+    <h1 class="text-[120px] font-extrabold text-gray-600">404</h1>
+    <p class="text-2xl font-medium text-gray-500 mb-6">Хмм, где мы?</p>
+    <RouterLink
+      to="/"
+      class="px-4 py-2 font-medium text-white bg-indigo-500 rounded-md hover:bg-indigo-500 transition-all duration-200 ease-in-out"
+    >
+      Домой
+    </RouterLink>
+  </div>
 </template>
