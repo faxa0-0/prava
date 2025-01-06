@@ -1,4 +1,5 @@
 <script setup>
+import QuizLoader from '@/components/QuizLoader.vue';
 import QuizNavigation from '@/components/QuizNavigation.vue';
 import axios from 'axios';
 import { computed, onMounted, reactive, ref } from 'vue';
@@ -7,40 +8,58 @@ const state = reactive({
   questions: [],
   isLoading: true,
 });
+
 const currentQuestionIndex = ref(0);
 const currentQuestion = computed(() => state.questions[currentQuestionIndex.value]);
 
 const goToNextQuestion = () => {
   if (currentQuestionIndex.value < state.questions.length - 1) {
     currentQuestionIndex.value++;
-  } else if (currentQuestionIndex.value == state.questions.length - 1) {
+  } else {
     currentQuestionIndex.value = 0;
   }
+  explanation.value = !!answered.value[currentQuestionIndex.value];
 };
 
 const goToPreviousQuestion = () => {
   if (currentQuestionIndex.value > 0) {
     currentQuestionIndex.value--;
-  } else if (currentQuestionIndex.value == 0) {
+  } else {
     currentQuestionIndex.value = state.questions.length - 1;
   }
+  explanation.value = !!answered.value[currentQuestionIndex.value];
 };
 
 const goToQuestion = (index) => {
   if (index >= 0 && index < state.questions.length) {
     currentQuestionIndex.value = index;
+    explanation.value = !!answered.value[currentQuestionIndex.value];
   }
 };
 
-const answered = ref([]);
-const handleAnswer = () => {
-  answered.value += 1;
+const shuffleOptions = (question) => {
+  const options = [question.answer, ...question.options];
+  for (let i = options.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]];
+  }
+  return options;
+};
+
+const explanation = ref(false);
+const answered = ref({});
+
+const handleAnswer = (option) => {
+  const isCorrect = option === currentQuestion.value.answer;
+  answered.value[currentQuestionIndex.value] = isCorrect ? 'correct' : 'incorrect';
+  explanation.value = true;
 };
 
 onMounted(async () => {
   const savedQuestions = localStorage.getItem('questions');
   if (savedQuestions) {
     state.questions = JSON.parse(savedQuestions);
+    state.questions.forEach((q) => (q.shuffledOptions = shuffleOptions(q)));
     state.isLoading = false;
     return;
   }
@@ -49,6 +68,7 @@ onMounted(async () => {
     .get('http://localhost:8888/quiz')
     .then((res) => {
       state.questions = res.data.questions;
+      state.questions.forEach((q) => (q.shuffledOptions = shuffleOptions(q)));
       localStorage.setItem('questions', JSON.stringify(state.questions));
     })
     .catch((err) => console.error('error fetching questions', err))
@@ -57,26 +77,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="state.isLoading" class="min-h-screen w-full flex items-center justify-around pb-5">
-    <div class="grid gap-3">
-      <h2
-        class="text-4xl font-manrope font-extrabold text-transparent bg-gradient-to-tr from-indigo-500 to-pink-500 bg-clip-text flex items-center"
-      >
-        L
-        <div
-          class="rounded-full flex items-center justify-center w-7 h-7 bg-gradient-to-tr from-indigo-500 to-pink-500 animate-spin"
-        >
-          <div class="h-5 w-4 rounded-full bg-white"></div>
-        </div>
-        ading...
-      </h2>
-    </div>
-  </div>
+  <QuizLoader v-if="state.isLoading" />
+
   <div v-else class="min-h-screen p-4 grid-cols-10 grid gap-4 text-white text-sm font-bold leading-6">
     <div
       class="rounded-lg shadow-lg row-span-2 col-span-8 text-gray-700 flex flex-col gap-6 py-6 px-4 overflow-y-auto max-h-[calc(100vh-2rem)] [&::-webkit-scrollbar]:hidden"
     >
-      <!-- Question Image -->
       <img
         :src="
           currentQuestion.img_url ||
@@ -86,29 +92,41 @@ onMounted(async () => {
         class="self-center h-2/4 w-2/4"
       />
 
-      <!-- Question Text -->
       <div class="rounded-lg shadow-md py-4 px-3 text-xl">
         <p>{{ currentQuestion.text }}</p>
       </div>
 
-      <!-- Question Options -->
       <p
-        v-for="(option, optionIndex) in [currentQuestion.answer, ...currentQuestion.options]"
+        v-for="(option, optionIndex) in currentQuestion.shuffledOptions"
         :key="optionIndex"
-        @click="handleAnswer"
-        class="rounded-lg border-2 py-4 px-3 transition-colors duration-500 hover:bg-indigo-300 hover:text-white hover:border-indigo-400 cursor-pointer"
+        @click="handleAnswer(option)"
+        :class="[
+          'rounded-lg border-2 py-4 px-3 transition-colors duration-500 cursor-pointer',
+          selectedOptions.value[currentQuestionIndex.value] === option &&
+          answered.value[currentQuestionIndex.value] === 'correct'
+            ? 'bg-green-500 text-white'
+            : '',
+          selectedOptions.value[currentQuestionIndex.value] === option &&
+          answered.value[currentQuestionIndex.value] === 'incorrect'
+            ? 'bg-red-500 text-white'
+            : '',
+          !explanation ? 'hover:bg-indigo-300 hover:text-white hover:border-indigo-400' : '',
+        ]"
       >
         {{ option }}
       </p>
 
-      <!-- Explanation -->
-      <div class="hidden rounded-lg shadow-lg shadow-indigo-300 border-2 border-indigo-200 py-4 px-3 text-xl">
+      <div
+        :class="[explanation ? '' : 'hidden']"
+        class="rounded-lg shadow-lg shadow-indigo-300 border-2 border-indigo-200 py-4 px-3 text-xl"
+      >
         <span>Объяснение</span>
         <p class="font-medium mt-2">{{ currentQuestion.explanation || 'No explanation available' }}</p>
       </div>
     </div>
+
     <QuizNavigation
-      :currentQuestionIndex
+      :currentQuestionIndex="currentQuestionIndex"
       :answered="answered"
       :questions="state.questions"
       @go-to-question="goToQuestion"

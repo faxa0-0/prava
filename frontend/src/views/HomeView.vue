@@ -1,5 +1,11 @@
 <script setup>
 import StartButton from '@/components/StartQuizButton.vue';
+import router from '@/router';
+
+const quiz = localStorage.getItem('questions');
+if (quiz) {
+  router.push('/quiz');
+}
 </script>
 
 <template>
