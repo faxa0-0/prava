@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/faxa0-0/prava/services"
+	"github.com/faxa0-0/prava/internal/services"
 )
 
 type QuizHandler struct {

@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/faxa0-0/prava/models"
-	"github.com/faxa0-0/prava/storage"
+	"github.com/faxa0-0/prava/internal/models"
+	"github.com/faxa0-0/prava/internal/storage"
 )
 
 type QuizService struct {

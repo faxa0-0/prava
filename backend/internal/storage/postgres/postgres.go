@@ -7,7 +7,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/lib/pq"
 
-	"github.com/faxa0-0/prava/models"
+	"github.com/faxa0-0/prava/internal/models"
 )
 
 type PostgresQuizStorage struct {

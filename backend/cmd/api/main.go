@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/faxa0-0/prava/config"
-	"github.com/faxa0-0/prava/handlers"
-	"github.com/faxa0-0/prava/services"
-	"github.com/faxa0-0/prava/storage/postgres"
+	"github.com/faxa0-0/prava/internal/config"
+	"github.com/faxa0-0/prava/internal/handlers"
+	"github.com/faxa0-0/prava/internal/services"
+	"github.com/faxa0-0/prava/internal/storage/postgres"
 )
 
 func main() {
