@@ -1,4 +1,5 @@
 <script setup>
+import router from '@/router';
 import { ref, onMounted, watch } from 'vue';
 
 const props = defineProps({
@@ -31,7 +32,8 @@ const startTimer = () => {
 
 watch(isTimeUp, (newVal) => {
   if (newVal) {
-    console.log('Time is up!');
+    localStorage.removeItem('questions');
+    router.push('/');
   }
 });
 
